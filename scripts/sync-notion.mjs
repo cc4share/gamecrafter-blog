@@ -109,12 +109,14 @@ export function metadata(page,{section,common,adapter}) {
     return href;
   };
   const fields=adapter.fields || {};
+  const projectPeriod=adapter.kind==='project'?p[fields.projectPeriod]?.date:null;
   return {
     id,kind:adapter.kind,moduleKey:section.key,modulePath:section.path,title,
     description:plainText(p[common.description]?.rich_text).trim() || title,
     pubDate:new Date(rawDate).toISOString(),publishedHasTime:rawDate.includes('T'),tags:(p[common.tags]?.multi_select || []).map(tag=>tag.name),draft:false,featured:!!p[common.featured]?.checkbox,
     projectStatus:adapter.kind==='project'?(p[fields.projectStatus]?.select?.name || ''):'',
     projectType:adapter.kind==='project'?plainText(p[fields.projectType]?.rich_text).trim():'',
+    projectPeriod:projectPeriod?{start:projectPeriod.start,end:projectPeriod.end || null}:null,
     projectUrl:adapter.kind==='project'?publicUrl(fields.projectUrl,'项目主页'):'',
     repository:adapter.kind==='project'?publicUrl(fields.repository,'代码仓库'):'',
   };
@@ -128,7 +130,7 @@ export async function collectSnapshot({request,config,media,previous=[],targets=
   for (const module of modules) {
     const source=await request('data_sources/'+module.sourceId);
     requireSchema(source,common,{title:'title',description:'rich_text',status:'select',date:'date',tags:'multi_select',slug:'rich_text',featured:'checkbox',cover:'files'},module.section.name);
-    if (module.adapter.kind==='project') requireSchema(source,module.adapter.fields,{projectStatus:'select',projectType:'rich_text',projectUrl:'url',repository:'url'},module.section.name);
+    if (module.adapter.kind==='project') requireSchema(source,module.adapter.fields,{projectStatus:'select',projectType:'rich_text',projectPeriod:'date',projectUrl:'url',repository:'url'},module.section.name);
   }
   const queued=[];
   const targeted=new Set((targets || []).map(target=>target.id));

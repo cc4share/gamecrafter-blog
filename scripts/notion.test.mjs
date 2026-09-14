@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {collectSections,collectSiteConfig,collectSnapshot,discoverSources,metadata} from './sync-notion.mjs';
 import {richText,renderBlocks,youtubeEmbedUrl} from './notion-render.mjs';
+import {formatProjectPeriod} from '../src/project-period.ts';
 
 const rt=text=>[{type:'text',plain_text:text,text:{content:text}}];
 const block=text=>({id:'block',type:'paragraph',paragraph:{rich_text:rt(text)}});
 const common={title:'标题',description:'摘要',status:'发布状态',published:'已发布',date:'发布日期',tags:'标签',slug:'路径',featured:'精选',cover:'封面'};
 const settingsFields={name:'站点名称',description:'简介',authorName:'作者名称',authorBio:'作者简介',avatar:'头像',email:'邮箱',github:'GitHub',x:'X',rss:'显示 RSS',theme:'显示明暗切换',activeTheme:'主题'};
 const sectionFields={name:'栏目',key:'标识',path:'路径',layout:'布局',enabled:'启用',navLabel:'导航名称',showInNav:'显示在导航',navOrder:'导航排序',eyebrow:'页眉',heading:'页面标题',description:'页面简介',showOnHome:'首页展示',homeTitle:'首页标题',homeDescription:'首页简介',homeLimit:'首页数量',contentSource:'内容数据源'};
-const projectFields={projectStatus:'项目状态',projectType:'项目类型',projectUrl:'项目主页',repository:'代码仓库'};
+const projectFields={projectStatus:'项目状态',projectType:'项目类型',projectPeriod:'项目周期',projectUrl:'项目主页',repository:'代码仓库'};
 const config={
   databaseId:'cms',site:'https://gamecrafter.fun',themes:{AstroPaper:'astropaper'},
   sources:{
@@ -18,10 +19,10 @@ const config={
 };
 const sources={byName:new Map([['站点设置','settings'],['栏目管理','sections'],['写作','writing'],['项目','projects']])};
 const section=(key='writing',overrides={})=>({key,name:key==='projects'?'项目':'写作',path:key==='projects'?'/projects':'/blog',layout:key==='projects'?'项目网格':'文章列表',enabled:true,navLabel:key,showInNav:true,navOrder:1,eyebrow:'',heading:key,description:'',showOnHome:true,homeTitle:key,homeDescription:'',homeLimit:5,contentSource:key==='projects'?'项目':'写作',sourceId:key==='projects'?'projects':'writing',sourcePageId:key+'-section',html:'',mediaIndex:{},...overrides});
-const page=(id='one',status='已发布',sourceId='writing')=>({id,created_time:'2026-09-09T00:00:00Z',last_edited_time:'2026-09-09T00:00:00Z',parent:{data_source_id:sourceId},properties:{标题:{title:rt(id)},摘要:{rich_text:[]},发布状态:{select:{name:status}},发布日期:{date:null},标签:{multi_select:[]},路径:{rich_text:rt(id)},精选:{checkbox:false},封面:{files:[]},项目状态:{select:null},项目类型:{rich_text:[]},项目主页:{url:null},代码仓库:{url:null}}});
+const page=(id='one',status='已发布',sourceId='writing')=>({id,created_time:'2026-09-09T00:00:00Z',last_edited_time:'2026-09-09T00:00:00Z',parent:{data_source_id:sourceId},properties:{标题:{title:rt(id)},摘要:{rich_text:[]},发布状态:{select:{name:status}},发布日期:{date:null},标签:{multi_select:[]},路径:{rich_text:rt(id)},精选:{checkbox:false},封面:{files:[]},项目状态:{select:null},项目类型:{rich_text:[]},项目周期:{date:null},项目主页:{url:null},代码仓库:{url:null}}});
 const contentSchema=(kind='article')=>({properties:Object.fromEntries([
   ['title','title'],['description','rich_text'],['status','select'],['date','date'],['tags','multi_select'],['slug','rich_text'],['featured','checkbox'],['cover','files'],
-  ...(kind==='project'?[['projectStatus','select'],['projectType','rich_text'],['projectUrl','url'],['repository','url']]:[]),
+  ...(kind==='project'?[['projectStatus','select'],['projectType','rich_text'],['projectPeriod','date'],['projectUrl','url'],['repository','url']]:[]),
 ].map(([key,type])=>[(kind==='project'&&projectFields[key])||common[key],{type}]))});
 
 test('database discovery uses source names and rejects an incomplete CMS',async()=>{
@@ -41,9 +42,16 @@ test('drafts, archived and trashed pages never publish',()=>{
 
 test('different module sources keep their own schema and routes',()=>{
   const value=page('tool','已发布','projects');
-  value.properties.精选.checkbox=true;value.properties.项目状态.select={name:'进行中'};value.properties.项目类型.rich_text=rt('网站');value.properties.项目主页.url='https://example.com';
+  value.properties.精选.checkbox=true;value.properties.项目状态.select={name:'进行中'};value.properties.项目类型.rich_text=rt('网站');value.properties.项目周期.date={start:'2023-01-01',end:null};value.properties.项目主页.url='https://example.com';
   const result=metadata(value,{section:section('projects'),common,adapter:{kind:'project',fields:projectFields}});
-  assert.equal(result.kind,'project');assert.equal(result.modulePath,'/projects');assert.equal(result.projectStatus,'进行中');assert.equal(result.projectType,'网站');
+  assert.equal(result.kind,'project');assert.equal(result.modulePath,'/projects');assert.equal(result.projectStatus,'进行中');assert.equal(result.projectType,'网站');assert.deepEqual(result.projectPeriod,{start:'2023-01-01',end:null});
+});
+
+test('project periods display ongoing and completed year ranges',()=>{
+  assert.equal(formatProjectPeriod({start:'2023-01-01',end:null}),'2023 — 现在');
+  assert.equal(formatProjectPeriod({start:'2017-04-01',end:'2018-10-01'}),'2017 — 2018');
+  assert.equal(formatProjectPeriod({start:'2024-01-01',end:'2024-12-31'}),'2024');
+  assert.equal(formatProjectPeriod(null),'');
 });
 
 test('incremental publication reads one target and preserves other modules',async()=>{
