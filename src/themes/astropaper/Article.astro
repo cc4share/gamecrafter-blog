@@ -15,7 +15,7 @@ const structuredData={'@context':'https://schema.org','@type':'BlogPosting',head
     <div class="text-muted-foreground my-2 flex items-center gap-2"><IconCalendar class="inline-block size-6 min-w-5.5"/><time class="text-sm sm:text-base" datetime={data.pubDate.toISOString()}>{data.pubDate.toLocaleDateString('zh-CN',{year:'numeric',month:'short',day:'numeric'})}</time></div>
     <article id="article" class="app-prose max-w-app mt-8 w-full"><slot/></article>
     <hr class="my-8 border-dashed"/>
-    {data.tags.length>0&&<ul class="mt-4 mb-8 flex flex-wrap gap-4 sm:my-8">{data.tags.map((tag:string)=><li class="text-accent text-sm">#{tag}</li>)}</ul>}
+    {data.tags.length>0&&<ul class="mt-4 mb-8 flex flex-wrap gap-4 sm:my-8">{data.tags.map((tag:string)=><li><a href={`/tags/${encodeURIComponent(tag)}/`} class="text-accent focus-outline rounded-sm text-sm decoration-dashed underline-offset-4 hover:underline">#{tag}</a></li>)}</ul>}
     <div class="my-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
       {previous&&<a href={`${section.path}/${previous.id}/`} class="flex w-full gap-1 hover:opacity-75"><IconArrowLeft class="inline-block flex-none"/><div><span>上一篇</span><div class="text-accent/85 text-sm">{previous.data.title}</div></div></a>}
       {next&&<a href={`${section.path}/${next.id}/`} class="flex w-full justify-end gap-1 text-end hover:opacity-75 sm:col-start-2"><div><span>下一篇</span><div class="text-accent/85 text-sm">{next.data.title}</div></div><IconArrowRight class="inline-block flex-none"/></a>}
