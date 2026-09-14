@@ -1,5 +1,150 @@
 ---
-import{formatProjectPeriod}from'../../project-period';import Icon from'./Icon.astro';const{project}=Astro.props;const data=project.data;const projectPeriod=formatProjectPeriod(data.projectPeriod);const base=data.modulePath==='/'?'':data.modulePath;const transitionName=`project-${String(project.id).replace(/[^a-zA-Z0-9_-]/g,'-')}`;
+import { formatProjectPeriod } from '../../project-period';
+import Icon from './Icon.astro';
+
+const { project } = Astro.props;
+const data = project.data;
+const projectPeriod = formatProjectPeriod(data.projectPeriod);
+const base = data.modulePath === '/' ? '' : data.modulePath;
+const href = `${base}/${project.id}/`;
+const transitionName = `project-${String(project.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
 ---
-<li class:list={['project-card',{'without-cover':!data.cover}]}>{data.cover&&<a class="cover" href={`${base}/${project.id}/`}><img src={data.cover} alt="" loading="lazy"/></a>}<div><a class="title" href={`${base}/${project.id}/`}><h2 style={{viewTransitionName:transitionName}}>{data.title}</h2></a><p class="meta">{data.projectType||'项目'}{data.projectStatus&&` · ${data.projectStatus}`}{projectPeriod&&` · ${projectPeriod}`}</p><p>{data.description}</p><a class="more" href={`${base}/${project.id}/`}>查看项目 <Icon name="arrowUpRight" size={16}/></a></div></li>
-<style>.project-card{display:grid;grid-template-columns:9rem 1fr;gap:1.1rem;margin:1.8rem 0}.project-card.without-cover{grid-template-columns:1fr}.cover{display:block}.cover img{width:100%;aspect-ratio:16/10;object-fit:cover;border:1px solid var(--ap-border)}.title{display:inline-block;color:var(--ap-accent);text-decoration:none}.title:hover{text-decoration:underline dashed}.title h2{margin:0;font-size:1.16rem}.meta{color:var(--ap-muted);font-size:.8rem}.project-card p{margin:.3rem 0}.more{display:inline-flex;align-items:center;gap:.2rem;margin-top:.4rem;font-size:.85rem}@media(max-width:520px){.project-card{grid-template-columns:1fr}.cover img{max-width:15rem}}</style>
+
+<li class:list={['project-card', { 'without-cover': !data.cover }]}>
+  {data.cover && (
+    <a class="cover" href={href} aria-label={`查看项目：${data.title}`}>
+      <img src={data.cover} alt="" loading="lazy" />
+    </a>
+  )}
+
+  <div class="content">
+    <a class="title" href={href}>
+      <h2 style={{ viewTransitionName: transitionName }}>{data.title}</h2>
+    </a>
+
+    <div class="meta" aria-label="项目资料">
+      <span>{data.projectType || '项目'}</span>
+      {data.projectStatus && <span>{data.projectStatus}</span>}
+      {projectPeriod && <span>{projectPeriod}</span>}
+    </div>
+
+    {data.description && <p class="description">{data.description}</p>}
+
+    <a class="more" href={href}>
+      查看项目 <Icon name="arrowUpRight" size={16} />
+    </a>
+  </div>
+</li>
+
+<style>
+  .project-card {
+    display: grid;
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: 1.25rem;
+    margin: 0;
+    padding: 1.75rem 0;
+    border-top: 1px solid var(--ap-border);
+  }
+
+  .project-card:last-child {
+    border-bottom: 1px solid var(--ap-border);
+  }
+
+  .project-card.without-cover {
+    grid-template-columns: 1fr;
+  }
+
+  .cover {
+    display: block;
+    align-self: start;
+  }
+
+  .cover img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border: 1px solid var(--ap-border);
+  }
+
+  .content {
+    min-width: 0;
+  }
+
+  .title {
+    display: inline-block;
+    color: var(--ap-accent);
+    text-decoration: none;
+  }
+
+  .title:hover {
+    text-decoration: underline dashed;
+  }
+
+  .title h2 {
+    margin: 0;
+    font-size: 1.16rem;
+    line-height: 1.35;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.6rem;
+    margin-top: 0.45rem;
+    color: var(--ap-muted);
+    font-size: 0.8rem;
+  }
+
+  .meta span + span::before {
+    margin-right: 0.6rem;
+    content: '·';
+  }
+
+  .description {
+    margin: 0.65rem 0 0;
+    line-height: 1.6;
+  }
+
+  .more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 640px) {
+    .project-card {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding: 1.5rem 0;
+    }
+
+    .cover img {
+      aspect-ratio: 16 / 9;
+    }
+
+    .title h2 {
+      font-size: 1.25rem;
+    }
+
+    .meta {
+      margin-top: 0.5rem;
+      font-size: 0.84rem;
+    }
+
+    .description {
+      display: -webkit-box;
+      overflow: hidden;
+      margin-top: 0.7rem;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+
+    .more {
+      margin-top: 0.85rem;
+    }
+  }
+</style>

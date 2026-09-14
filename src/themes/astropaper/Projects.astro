@@ -6,7 +6,8 @@ import{site}from'../../site.config';import BaseLayout from'./BaseLayout.astro';i
   <main id="main-content" class="app-layout pb-4" data-list-page data-back-url={`${section.path}/`}>
     <h1 class="text-2xl font-semibold sm:text-3xl">{section.heading}</h1>
     {section.description&&<p class="mt-2 mb-6 italic">{section.description}</p>}
-    {projects.length?<ul>{projects.map(project=><ProjectCard {project}/>)}</ul>:<p class="text-muted-foreground">还没有公开项目。</p>}
+    {projects.length?<ul class="project-list">{projects.map(project=><ProjectCard {project}/>)}</ul>:<p class="text-muted-foreground">还没有公开项目。</p>}
   </main>
 </BaseLayout>
+<style>.project-list{margin-top:.75rem}</style>
 <script>const remember=()=>{const list=document.querySelector<HTMLElement>('[data-list-page]');if(list?.dataset.backUrl)sessionStorage.setItem('backUrl',list.dataset.backUrl)};remember();document.addEventListener('astro:page-load',remember);</script>
