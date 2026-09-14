@@ -9,6 +9,43 @@ export function safeUrl(value) {
   return null;
 }
 
+function youtubeStart(value) {
+  if (!value) return 0;
+  if (/^\d+$/.test(value)) return Number(value);
+  const match = value.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i);
+  if (!match || !match.slice(1).some(Boolean)) return 0;
+  return Number(match[1] || 0) * 3600 + Number(match[2] || 0) * 60 + Number(match[3] || 0);
+}
+
+export function youtubeEmbedUrl(value) {
+  try {
+    const url = new URL(value);
+    if (!['https:', 'http:'].includes(url.protocol)) return null;
+    const host = url.hostname.toLowerCase();
+    const parts = url.pathname.split('/').filter(Boolean);
+    let id = '';
+    if (host === 'youtu.be') id = parts[0] || '';
+    else if (['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com'].includes(host)) {
+      if (url.pathname === '/watch') id = url.searchParams.get('v') || '';
+      else if (['embed', 'shorts', 'live', 'v'].includes(parts[0])) id = parts[1] || '';
+    } else if (['youtube-nocookie.com', 'www.youtube-nocookie.com'].includes(host) && parts[0] === 'embed') id = parts[1] || '';
+    if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return null;
+    const start = youtubeStart(url.searchParams.get('start') || url.searchParams.get('t'));
+    return `https://www.youtube-nocookie.com/embed/${id}${start > 0 ? `?start=${start}` : ''}`;
+  } catch {}
+  return null;
+}
+
+function youtubeFromRichText(items = []) {
+  if (items.length !== 1) return null;
+  const item = items[0];
+  return youtubeEmbedUrl(item.href ?? item.text?.link?.url ?? plainText(items).trim());
+}
+
+function youtubeFigure(src, caption = []) {
+  return '<figure class="notion-video notion-youtube"><div class="notion-video-frame"><iframe src="' + escapeHtml(src) + '" title="YouTube 视频" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>' + (caption?.length ? '<figcaption>' + richText(caption) + '</figcaption>' : '') + '</figure>';
+}
+
 export function richText(items = []) {
   return items.map(item => {
     let value = escapeHtml(plainText([item])).replaceAll('\n', '<br>');
@@ -37,7 +74,10 @@ export async function renderBlocks(blocks, { children, media, publishedLinks = n
     const text = richText(body.rich_text);
     const nested = async () => block.has_children ? renderBlocks(await children(block.id), {children, media, publishedLinks}, depth + 1) : '';
     switch (type) {
-      case 'paragraph': html += '<p>' + text + '</p>' + await nested(); break;
+      case 'paragraph': {
+        const youtube = youtubeFromRichText(body.rich_text);
+        html += (youtube ? youtubeFigure(youtube) : '<p>' + text + '</p>') + await nested(); break;
+      }
       case 'heading_1': case 'heading_2': case 'heading_3': {
         const tag = 'h' + Math.min(Number(type.at(-1)) + 1, 4);
         html += '<' + tag + '>' + text + '</' + tag + '>' + await nested(); break;
@@ -55,12 +95,16 @@ export async function renderBlocks(blocks, { children, media, publishedLinks = n
         html += '<figure><img src="' + escapeHtml(src) + '" alt="' + escapeHtml(plainText(body.caption)) + '" loading="lazy">' + (body.caption?.length ? '<figcaption>' + richText(body.caption) + '</figcaption>' : '') + '</figure>'; break;
       }
       case 'file': case 'pdf': case 'audio': case 'video': {
+        const youtube = type === 'video' ? youtubeEmbedUrl(body.external?.url ?? body.file?.url) : null;
+        if (youtube) { html += youtubeFigure(youtube, body.caption); break; }
         const src = await media(body, block.id);
         if (src) html += '<p><a href="' + escapeHtml(src) + '">' + escapeHtml(body.name || plainText(body.caption) || ({pdf:'查看 PDF',file:'下载附件',audio:'播放音频',video:'观看视频'}[type])) + '</a></p>'; break;
       }
       case 'bookmark': case 'embed': case 'link_preview': {
         const href = safeUrl(body.url);
-        if (href) html += '<p><a href="' + escapeHtml(href) + '" rel="noopener noreferrer">' + (richText(body.caption) || escapeHtml(href)) + '</a></p>'; break;
+        const youtube = youtubeEmbedUrl(href);
+        if (youtube) html += youtubeFigure(youtube, body.caption);
+        else if (href) html += '<p><a href="' + escapeHtml(href) + '" rel="noopener noreferrer">' + (richText(body.caption) || escapeHtml(href)) + '</a></p>'; break;
       }
       case 'table': {
         const rows = await children(block.id);

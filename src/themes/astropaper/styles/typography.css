@@ -59,6 +59,18 @@
       @apply opacity-75;
     }
 
+    .notion-video {
+      @apply my-6 w-full;
+    }
+
+    .notion-video-frame {
+      @apply border-border relative aspect-video w-full overflow-hidden rounded-xl border bg-black;
+
+      iframe {
+        @apply absolute inset-0 h-full w-full border-0;
+      }
+    }
+
     table {
       th,
       td {

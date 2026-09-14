@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {collectSections,collectSiteConfig,collectSnapshot,discoverSources,metadata} from './sync-notion.mjs';
-import {richText,renderBlocks} from './notion-render.mjs';
+import {richText,renderBlocks,youtubeEmbedUrl} from './notion-render.mjs';
 
 const rt=text=>[{type:'text',plain_text:text,text:{content:text}}];
 const block=text=>({id:'block',type:'paragraph',paragraph:{rich_text:rt(text)}});
@@ -124,4 +124,17 @@ test('rich text and block rendering remain safe',async()=>{
   const list=[{id:'1',type:'numbered_list_item',has_children:true,numbered_list_item:{rich_text:rt('one')}},{id:'2',type:'numbered_list_item',numbered_list_item:{rich_text:rt('two')}}];
   assert.equal(await renderBlocks(list,{children:async()=>[block('nested')],media:async()=>''}),'<ol><li>one<p>nested</p></li><li>two</li></ol>');
   await assert.rejects(()=>renderBlocks([{type:'synced_block'}],{children:async()=>[],media:async()=>''}),/不支持/);
+});
+
+test('YouTube links render as privacy-enhanced responsive players',async()=>{
+  assert.equal(youtubeEmbedUrl('https://youtu.be/dQw4w9WgXcQ?t=1m5s'),'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?start=65');
+  assert.equal(youtubeEmbedUrl('https://www.youtube.com/shorts/dQw4w9WgXcQ'),'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ');
+  assert.equal(youtubeEmbedUrl('https://example.com/watch?v=dQw4w9WgXcQ'),null);
+  const context={children:async()=>[],media:async()=>{throw new Error('YouTube embeds must not download media')}};
+  const embed=await renderBlocks([{id:'video',type:'embed',embed:{url:'https://www.youtube.com/watch?v=dQw4w9WgXcQ',caption:rt('演示')}}],context);
+  assert.match(embed,/class="notion-video notion-youtube"/);
+  assert.match(embed,/youtube-nocookie\.com\/embed\/dQw4w9WgXcQ/);
+  assert.match(embed,/<figcaption>演示<\/figcaption>/);
+  const paragraph=await renderBlocks([{id:'link',type:'paragraph',paragraph:{rich_text:[{...rt('https://youtu.be/dQw4w9WgXcQ')[0],href:'https://youtu.be/dQw4w9WgXcQ'}]}}],context);
+  assert.match(paragraph,/<iframe/);
 });
