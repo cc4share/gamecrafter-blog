@@ -35,6 +35,7 @@ const projects = defineCollection({
     featured: z.boolean().default(false),
     projectStatus: z.string().default(""),
     projectType: z.string().default(""),
+    projectPeriod: z.object({ start: z.string(), end: z.string().nullable() }).nullable().default(null),
     projectUrl: z.string().default(""),
     repository: z.string().default(""),
     cover: z.string().default(""),

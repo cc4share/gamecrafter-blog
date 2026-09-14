@@ -63,6 +63,7 @@
           "fields": {
             "projectStatus": "项目状态",
             "projectType": "项目类型",
+            "projectPeriod": "项目周期",
             "projectUrl": "项目主页",
             "repository": "代码仓库"
           }
