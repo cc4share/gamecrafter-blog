@@ -1,0 +1,130 @@
+.stream[data-view="list"] {
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 769px) {
+  .stream[data-view="notes"] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 1.7rem 1.5rem;
+    padding: .75rem .25rem 2rem;
+  }
+
+  .stream[data-view="notes"] .thought {
+    --foreground: #302c27;
+    --muted-foreground: #655f54;
+    --accent: #785229;
+    --border: #ded1a6;
+    --muted: #eee5bc;
+    --paper: #fff5d2;
+    position: relative;
+    display: block;
+    min-width: 0;
+    margin: 0;
+    padding: 1.4rem 1.45rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: .15rem;
+    background: var(--paper);
+    color: var(--foreground);
+    box-shadow: 2px 3px 0 rgb(55 44 22 / 9%), 0 10px 24px rgb(55 44 22 / 10%);
+    transform: rotate(-.7deg);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .stream[data-view="notes"] .thought:nth-child(3n + 2) {
+    --paper: #e9f3ee;
+    --border: #c8ddd1;
+    --muted: #daeae1;
+    transform: rotate(.8deg);
+  }
+
+  .stream[data-view="notes"] .thought:nth-child(3n) {
+    --paper: #f9e9e8;
+    --border: #e6cfca;
+    --muted: #efdcd9;
+    transform: rotate(-.35deg);
+  }
+
+  .stream[data-view="notes"] .thought::before {
+    position: absolute;
+    top: -.53rem;
+    left: calc(50% - 1.8rem);
+    width: 3.6rem;
+    height: .9rem;
+    background: rgb(255 255 255 / 58%);
+    box-shadow: 0 1px 2px rgb(55 44 22 / 12%);
+    content: '';
+    transform: rotate(-3deg);
+  }
+
+  .stream[data-view="notes"] .thought:not(.detail):hover {
+    background: var(--paper);
+    box-shadow: 3px 5px 0 rgb(55 44 22 / 11%), 0 15px 28px rgb(55 44 22 / 15%);
+    transform: translateY(-3px) rotate(0deg);
+  }
+
+  .stream[data-view="notes"] .avatar,
+  .stream[data-view="notes"] .author,
+  .stream[data-view="notes"] .handle,
+  .stream[data-view="notes"] .dot { display: none; }
+
+  .stream[data-view="notes"] .content { min-width: 0; }
+  .stream[data-view="notes"] header { justify-content: space-between; }
+  .stream[data-view="notes"] header::before { color: var(--muted-foreground); content: '随手记'; font-size: .76rem; letter-spacing: .08em; }
+  .stream[data-view="notes"] .date { color: var(--muted-foreground); font-size: .75rem; }
+
+  .stream[data-view="notes"] .message-link { margin-top: .85rem; }
+  .stream[data-view="notes"] .message {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 1.08rem;
+    font-weight: 550;
+    line-height: 1.7;
+  }
+
+  .stream[data-view="notes"] .summary,
+  .stream[data-view="notes"] .feed-body { color: var(--foreground); font-size: .88rem; line-height: 1.65; }
+  .stream[data-view="notes"] .summary { margin-top: .6rem; }
+  .stream[data-view="notes"] .feed-body { margin-top: .7rem; }
+  .stream[data-view="notes"] .feed-body :is(p, a, strong, figcaption) { color: inherit; }
+  .stream[data-view="notes"] .feed-body a { text-decoration-color: currentColor; }
+  .stream[data-view="notes"] .feed-body figure { max-width: 100%; margin-top: .8rem; }
+  .stream[data-view="notes"] .feed-body figure img { max-height: 14rem; }
+  .stream[data-view="notes"] .feed-body .notion-video { max-width: 100%; }
+  .stream[data-view="notes"] .feed-body .notion-video-frame { width: 100%; }
+  .stream[data-view="notes"] footer { margin-top: 1rem; padding-top: .65rem; border-top: 1px dashed var(--border); }
+  .stream[data-view="notes"] footer a { color: var(--accent); }
+
+  [data-theme="dark"] .stream[data-view="notes"] .thought {
+    --foreground: #f5efe1;
+    --muted-foreground: #cec2aa;
+    --accent: #ffd18e;
+    --border: #685638;
+    --muted: #5c4d34;
+    --paper: #493c29;
+    box-shadow: 2px 3px 0 rgb(0 0 0 / 18%), 0 10px 24px rgb(0 0 0 / 18%);
+  }
+
+  [data-theme="dark"] .stream[data-view="notes"] .thought:nth-child(3n + 2) {
+    --paper: #2e4844;
+    --border: #42645d;
+    --muted: #3b5a54;
+  }
+
+  [data-theme="dark"] .stream[data-view="notes"] .thought:nth-child(3n) {
+    --paper: #513c42;
+    --border: #71545e;
+    --muted: #654951;
+  }
+
+  [data-theme="dark"] .stream[data-view="notes"] .thought::before { background: rgb(245 239 225 / 30%); }
+}
+
+@media (max-width: 768px) {
+  .stream { border-top: 1px solid var(--border); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stream[data-view="notes"] .thought { transition: none; }
+}
