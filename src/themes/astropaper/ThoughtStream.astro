@@ -1,14 +1,70 @@
 ---
-import{site}from'../../site.config';import BaseLayout from'./BaseLayout.astro';import Breadcrumb from'./Breadcrumb.astro';import ThoughtCard from'./ThoughtCard.astro';const{thoughts,section}=Astro.props;
+import { site } from '../../site.config';
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumb from './Breadcrumb.astro';
+import ThoughtCard from './ThoughtCard.astro';
+import './styles/thought-notes.css';
+
+const { thoughts, section } = Astro.props;
 ---
+
 <BaseLayout title={`${section.navLabel} · ${site.name}`} description={section.description}>
-  <Breadcrumb {section}/>
+  <Breadcrumb {section} />
   <main id="main-content" class="app-layout pb-4" data-list-page data-back-url={`${section.path}/`}>
-    <h1 class="text-2xl font-semibold sm:text-3xl">{section.heading}</h1>
-    {section.description&&<p class="mt-2 mb-6 italic">{section.description}</p>}
-    <section class="stream" aria-label={section.navLabel}>{thoughts.map(thought=><ThoughtCard {thought}/>)}</section>
-    {!thoughts.length&&<p class="text-muted-foreground">还没有公开想法。</p>}
+    <div class="stream-heading">
+      <div>
+        <h1 class="text-2xl font-semibold sm:text-3xl">{section.heading}</h1>
+        {section.description && <p class="mt-2 italic">{section.description}</p>}
+      </div>
+      {thoughts.length > 0 && (
+        <div class="view-switch" role="group" aria-label="想法视图">
+          <button type="button" data-thought-view="notes" aria-pressed="true">便签</button>
+          <button type="button" data-thought-view="list" aria-pressed="false">列表</button>
+        </div>
+      )}
+    </div>
+    {thoughts.length > 0
+      ? <section class="stream" data-view="notes" aria-label={section.navLabel}>{thoughts.map(thought => <ThoughtCard {thought} />)}</section>
+      : <p class="text-muted-foreground">还没有公开想法。</p>}
   </main>
 </BaseLayout>
-<style>.stream{border-top:1px solid var(--border)}</style>
-<script>const remember=()=>{const list=document.querySelector<HTMLElement>('[data-list-page]');if(list?.dataset.backUrl)sessionStorage.setItem('backUrl',list.dataset.backUrl)};remember();document.addEventListener('astro:page-load',remember);</script>
+
+<style>
+  .stream-heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+  .view-switch { display: none; flex: none; padding: .2rem; border: 1px solid var(--border); border-radius: .5rem; }
+  .view-switch button { padding: .35rem .65rem; border-radius: .3rem; color: var(--muted-foreground); font-size: .8rem; }
+  .view-switch button[aria-pressed="true"] { background: var(--muted); color: var(--foreground); }
+  @media (min-width: 769px) { .view-switch { display: flex; } }
+</style>
+
+<script>
+  const setupStream = () => {
+    const page = document.querySelector<HTMLElement>('[data-list-page]');
+    if (!page) return;
+    if (page.dataset.backUrl) sessionStorage.setItem('backUrl', page.dataset.backUrl);
+
+    const stream = page.querySelector<HTMLElement>('.stream');
+    if (!stream) return;
+    const buttons = page.querySelectorAll<HTMLButtonElement>('[data-thought-view]');
+    const setView = (view: 'notes' | 'list') => {
+      stream.dataset.view = view;
+      buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.thoughtView === view)));
+    };
+
+    try {
+      setView(localStorage.getItem('thoughts-desktop-view') === 'list' ? 'list' : 'notes');
+    } catch { setView('notes'); }
+
+    buttons.forEach(button => {
+      if (button.dataset.ready) return;
+      button.dataset.ready = 'true';
+      button.addEventListener('click', () => {
+        const view = button.dataset.thoughtView === 'list' ? 'list' : 'notes';
+        setView(view);
+        try { localStorage.setItem('thoughts-desktop-view', view); } catch {}
+      });
+    });
+  };
+  setupStream();
+  document.addEventListener('astro:page-load', setupStream);
+</script>

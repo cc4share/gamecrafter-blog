@@ -1,0 +1,95 @@
+.stream[data-view="list"] {
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 769px) {
+  .stream[data-view="notes"] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 1.7rem 1.5rem;
+    padding: .75rem .25rem 2rem;
+  }
+
+  .stream[data-view="notes"] .thought {
+    position: relative;
+    display: block;
+    min-width: 0;
+    margin: 0;
+    padding: 1.4rem 1.45rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: .15rem;
+    background: color-mix(in srgb, var(--background) 86%, var(--muted));
+    color: var(--foreground);
+    box-shadow: 2px 3px 0 color-mix(in srgb, var(--foreground) 8%, transparent),
+      0 10px 24px color-mix(in srgb, var(--foreground) 8%, transparent);
+    transform: rotate(-.7deg);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .stream[data-view="notes"] .thought:nth-child(3n + 2) {
+    transform: rotate(.8deg);
+  }
+
+  .stream[data-view="notes"] .thought:nth-child(3n) {
+    transform: rotate(-.35deg);
+  }
+
+  .stream[data-view="notes"] .thought::before {
+    position: absolute;
+    top: -.53rem;
+    left: calc(50% - 1.8rem);
+    width: 3.6rem;
+    height: .9rem;
+    background: color-mix(in srgb, var(--muted) 70%, transparent);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--foreground) 12%, transparent);
+    content: '';
+    transform: rotate(-3deg);
+  }
+
+  .stream[data-view="notes"] .thought:not(.detail):hover {
+    background: color-mix(in srgb, var(--background) 86%, var(--muted));
+    box-shadow: 3px 5px 0 color-mix(in srgb, var(--foreground) 10%, transparent),
+      0 15px 28px color-mix(in srgb, var(--foreground) 12%, transparent);
+    transform: translateY(-3px) rotate(0deg);
+  }
+
+  .stream[data-view="notes"] .avatar,
+  .stream[data-view="notes"] .author,
+  .stream[data-view="notes"] .handle,
+  .stream[data-view="notes"] .dot { display: none; }
+
+  .stream[data-view="notes"] .content { min-width: 0; }
+  .stream[data-view="notes"] header { justify-content: space-between; }
+  .stream[data-view="notes"] header::before { color: var(--muted-foreground); content: '随手记'; font-size: .76rem; letter-spacing: .08em; }
+  .stream[data-view="notes"] .date { color: var(--muted-foreground); font-size: .75rem; }
+
+  .stream[data-view="notes"] .message-link { margin-top: .85rem; }
+  .stream[data-view="notes"] .message {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 1.08rem;
+    font-weight: 550;
+    line-height: 1.7;
+  }
+
+  .stream[data-view="notes"] .summary,
+  .stream[data-view="notes"] .feed-body { font-size: .88rem; line-height: 1.65; }
+  .stream[data-view="notes"] .summary { margin-top: .6rem; }
+  .stream[data-view="notes"] .feed-body { margin-top: .7rem; }
+  .stream[data-view="notes"] .feed-body figure { max-width: 100%; margin-top: .8rem; }
+  .stream[data-view="notes"] .feed-body figure img { max-height: 14rem; }
+  .stream[data-view="notes"] .feed-body .notion-video { max-width: 100%; }
+  .stream[data-view="notes"] .feed-body .notion-video-frame { width: 100%; }
+  .stream[data-view="notes"] footer { margin-top: 1rem; padding-top: .65rem; border-top: 1px dashed var(--border); }
+  .stream[data-view="notes"] footer a { color: var(--accent); }
+
+}
+
+@media (max-width: 768px) {
+  .stream { border-top: 1px solid var(--border); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stream[data-view="notes"] .thought { transition: none; }
+}
