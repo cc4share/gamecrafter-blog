@@ -32,6 +32,11 @@
     transition: border-color .18s ease, box-shadow .18s ease;
   }
 
+  [data-theme="dark"] .stream[data-view="notes"] .thought {
+    --note-edge: var(--border);
+    --note-surface: var(--muted);
+  }
+
   .stream[data-view="notes"] .thought::before {
     position: absolute;
     top: 0;
