@@ -43,7 +43,7 @@ const date=data.pubDate.toLocaleString('zh-CN',data.publishedHasTime
   .author{overflow:hidden;font-weight:600;text-decoration:none;text-overflow:ellipsis;white-space:nowrap}.author:hover{text-decoration:underline;color:inherit}
   .handle,.date,.dot{color:var(--muted-foreground);font-size:.84rem}.handle{overflow:hidden;text-overflow:ellipsis}.date{white-space:nowrap;text-decoration:none}.date:hover{text-decoration:underline;color:var(--muted-foreground)}
   .message-link{display:block;margin-top:.35rem;text-decoration:none;color:inherit}.message-link:hover{color:inherit}.message{margin:.35rem 0 0;font-size:1rem;font-weight:400;line-height:1.6;letter-spacing:0;overflow-wrap:anywhere}.detail .message{font-size:1.08rem}
-  .summary{margin:.3rem 0 0;color:var(--muted-foreground);line-height:1.55}.body{margin-top:1rem;max-width:none}.body:global(> :first-child){margin-top:0}
+  .summary{margin:.3rem 0 0;color:var(--muted-foreground);line-height:1.55;overflow-wrap:anywhere}.body{margin-top:1rem;max-width:none;overflow-wrap:anywhere}.body:global(> :first-child){margin-top:0}
   .feed-body{margin-top:.55rem;font-size:.95rem;line-height:1.55}
   .feed-body :global(p){margin:.4rem 0}
   .feed-body :global(figure){margin:.7rem 0 0;overflow:hidden;border:1px solid var(--border);border-radius:.9rem;background:var(--muted)}
@@ -51,6 +51,7 @@ const date=data.pubDate.toLocaleString('zh-CN',data.publishedHasTime
   .feed-body :global(figcaption){padding:.45rem .7rem;color:var(--muted-foreground);font-size:.78rem}
   .feed-body :global(.notion-video){width:100%;margin:.7rem 0 0}
   .feed-body :global(.notion-video-frame){width:100%;border-radius:.9rem}
+  .feed-body :global(pre),.feed-body :global(table){max-width:100%;overflow-x:auto}
   footer{margin-top:.75rem}footer a{display:inline-flex;align-items:center;gap:.3rem;color:var(--muted-foreground);font-size:.8rem;text-decoration:none}footer a:hover{color:var(--accent)}
   @media(min-width:641px){.feed-body :global(figure){max-width:32rem;overflow:visible;border:0;border-radius:0;background:transparent}.feed-body :global(figure img){width:auto;max-width:100%;height:auto;max-height:20rem;margin:0;object-fit:contain;border:1px solid var(--border);border-radius:.75rem}.feed-body :global(figcaption){padding:.4rem 0}.feed-body :global(.notion-video){max-width:32rem}.feed-body :global(.notion-video-frame){overflow:hidden;border:1px solid var(--border);border-radius:.75rem;background:#000}}
   @media(max-width:480px){.thought{grid-template-columns:2.65rem minmax(0,1fr);gap:.65rem;padding-block:1rem}.avatar{width:2.65rem;height:2.65rem}.handle{display:none}.dot{display:none}.date{margin-left:auto;font-size:.78rem}}

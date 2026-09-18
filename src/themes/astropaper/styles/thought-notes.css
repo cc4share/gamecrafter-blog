@@ -5,42 +5,48 @@
 @media (min-width: 769px) {
   .stream[data-view="notes"] {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 19rem));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
-    justify-content: center;
-    gap: 1.2rem 1rem;
-    padding: .5rem .25rem 1.5rem;
+    gap: 1rem;
+    padding: .25rem 0 2rem;
   }
 
+  .stream[data-view="notes"].is-masonry { grid-auto-rows: 4px; row-gap: 0; }
+  .stream[data-view="notes"].is-masonry .thought:nth-child(odd) { grid-column: 1; }
+  .stream[data-view="notes"].is-masonry .thought:nth-child(even) { grid-column: 2; }
+
   .stream[data-view="notes"] .thought {
+    --note-edge: color-mix(in srgb, var(--foreground) 13%, var(--background));
+    --note-surface: color-mix(in srgb, var(--background) 94%, var(--muted));
     position: relative;
     display: block;
     min-width: 0;
     margin: 0;
-    padding: 1.05rem 1.1rem .85rem;
-    border: 1px solid var(--border);
-    border-radius: .15rem;
-    background: color-mix(in srgb, var(--background) 86%, var(--muted));
-    color: var(--foreground);
-    box-shadow: 2px 2px 0 color-mix(in srgb, var(--foreground) 7%, transparent),
-      0 8px 18px color-mix(in srgb, var(--foreground) 7%, transparent);
-    transition: none;
+    padding: 1rem 1.05rem .8rem;
+    overflow: hidden;
+    border: 1px solid var(--note-edge);
+    border-radius: .3rem;
+    background: var(--note-surface);
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--foreground) 5%, transparent),
+      0 10px 22px color-mix(in srgb, var(--foreground) 6%, transparent);
+    transition: border-color .18s ease, box-shadow .18s ease;
   }
 
   .stream[data-view="notes"] .thought::before {
     position: absolute;
-    top: -.43rem;
-    left: calc(50% - 1.5rem);
-    width: 3rem;
-    height: .7rem;
-    background: color-mix(in srgb, var(--muted) 70%, transparent);
-    box-shadow: 0 1px 2px color-mix(in srgb, var(--foreground) 12%, transparent);
+    top: 0;
+    left: 1.05rem;
+    width: 2rem;
+    height: .18rem;
+    background: var(--accent);
     content: '';
-    transform: rotate(-3deg);
   }
 
   .stream[data-view="notes"] .thought:not(.detail):hover {
-    background: color-mix(in srgb, var(--background) 86%, var(--muted));
+    background: var(--note-surface);
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--note-edge));
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--foreground) 5%, transparent),
+      0 12px 26px color-mix(in srgb, var(--foreground) 10%, transparent);
   }
 
   .stream[data-view="notes"] .avatar,
@@ -49,30 +55,33 @@
   .stream[data-view="notes"] .dot { display: none; }
 
   .stream[data-view="notes"] .content { min-width: 0; }
-  .stream[data-view="notes"] header { justify-content: space-between; }
-  .stream[data-view="notes"] header::before { color: var(--muted-foreground); content: '随手记'; font-size: .76rem; letter-spacing: .08em; }
-  .stream[data-view="notes"] .date { color: var(--muted-foreground); font-size: .75rem; }
+  .stream[data-view="notes"] header { min-width: 0; }
+  .stream[data-view="notes"] .date { color: var(--muted-foreground); font-size: .76rem; }
 
   .stream[data-view="notes"] .message-link { margin-top: .65rem; }
   .stream[data-view="notes"] .message {
     margin: 0;
     color: var(--foreground);
     font-size: 1rem;
-    font-weight: 550;
-    line-height: 1.7;
+    font-weight: 600;
+    line-height: 1.5;
   }
 
   .stream[data-view="notes"] .summary,
-  .stream[data-view="notes"] .feed-body { font-size: .88rem; line-height: 1.65; }
+  .stream[data-view="notes"] .feed-body { font-size: .9rem; line-height: 1.65; }
   .stream[data-view="notes"] .summary { margin-top: .5rem; }
   .stream[data-view="notes"] .feed-body { margin-top: .55rem; }
-  .stream[data-view="notes"] .feed-body figure { max-width: 100%; margin-top: .65rem; }
-  .stream[data-view="notes"] .feed-body figure img { max-height: 10rem; }
+  .stream[data-view="notes"] .feed-body figure { max-width: 100%; margin-top: .75rem; }
+  .stream[data-view="notes"] .feed-body figure img { max-width: 100%; max-height: 11rem; }
   .stream[data-view="notes"] .feed-body .notion-video { max-width: 100%; }
   .stream[data-view="notes"] .feed-body .notion-video-frame { width: 100%; }
-  .stream[data-view="notes"] footer { margin-top: .7rem; padding-top: .55rem; border-top: 1px dashed var(--border); }
-  .stream[data-view="notes"] footer a { color: var(--accent); }
 
+  .stream[data-view="notes"] footer {
+    margin-top: .8rem;
+    padding-top: .55rem;
+    border-top: 1px solid var(--note-edge);
+  }
+  .stream[data-view="notes"] footer a { color: var(--accent); }
 }
 
 @media (max-width: 768px) {

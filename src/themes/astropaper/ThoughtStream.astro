@@ -38,17 +38,49 @@ const { thoughts, section } = Astro.props;
 </style>
 
 <script>
+  let cleanupMasonry = () => {};
   const setupStream = () => {
+    cleanupMasonry();
     const page = document.querySelector<HTMLElement>('[data-list-page]');
     if (!page) return;
     if (page.dataset.backUrl) sessionStorage.setItem('backUrl', page.dataset.backUrl);
 
     const stream = page.querySelector<HTMLElement>('.stream');
     if (!stream) return;
+    const cards = [...stream.querySelectorAll<HTMLElement>('.thought')];
+    let frame = 0;
+    const layoutNotes = () => {
+      if (!stream.isConnected) return;
+      stream.classList.remove('is-masonry');
+      cards.forEach(card => card.style.removeProperty('grid-row-end'));
+      if (stream.dataset.view !== 'notes' || !matchMedia('(min-width: 769px)').matches) return;
+
+      const heights = cards.map(card => card.getBoundingClientRect().height);
+      const gap = parseFloat(getComputedStyle(stream).columnGap) || 16;
+      const rowHeight = 4;
+      stream.classList.add('is-masonry');
+      cards.forEach((card, index) => {
+        card.style.gridRowEnd = `span ${Math.ceil((heights[index] + gap) / rowHeight)}`;
+      });
+    };
+    const scheduleLayout = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(layoutNotes);
+    };
+    const images = cards.flatMap(card => [...card.querySelectorAll('img')]);
+    images.forEach(image => image.addEventListener('load', scheduleLayout));
+    window.addEventListener('resize', scheduleLayout);
+    document.fonts?.ready.then(scheduleLayout);
+    cleanupMasonry = () => {
+      cancelAnimationFrame(frame);
+      images.forEach(image => image.removeEventListener('load', scheduleLayout));
+      window.removeEventListener('resize', scheduleLayout);
+    };
     const buttons = page.querySelectorAll<HTMLButtonElement>('[data-thought-view]');
     const setView = (view: 'notes' | 'list') => {
       stream.dataset.view = view;
       buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.thoughtView === view)));
+      scheduleLayout();
     };
 
     try {
