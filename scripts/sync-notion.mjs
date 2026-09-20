@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { resolve, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { plainText, renderBlocks, safeUrl } from './notion-render.mjs';
+import { recommendationType } from '../src/recommendations.mjs';
 
 const compactId=value=>String(value || '').replaceAll('-','').toLowerCase();
 const normalizedPath=value=>{
@@ -93,6 +94,7 @@ export async function collectSections({request,config,sources,media}) {
 }
 
 export function metadata(page,{section,common,adapter}) {
+  common={...common,...adapter.commonFields};
   if (page.in_trash || page.is_archived || page.properties?.[common.status]?.select?.name!==common.published) return null;
   const p=page.properties;
   const title=plainText(p[common.title]?.title).trim();
@@ -109,16 +111,24 @@ export function metadata(page,{section,common,adapter}) {
     return href;
   };
   const fields=adapter.fields || {};
+  const recommendationCategory=adapter.kind==='recommendation'?(p[fields.recommendationType]?.select?.name || ''):'';
+  if (adapter.kind==='recommendation' && !recommendationType(recommendationCategory)) throw new Error('推荐内容必须选择类型：书籍、游戏、软件、硬件或人物');
   const projectPeriod=adapter.kind==='project'?p[fields.projectPeriod]?.date:null;
   return {
     id,kind:adapter.kind,moduleKey:section.key,modulePath:section.path,title,
-    description:plainText(p[common.description]?.rich_text).trim() || title,
+    description:plainText(p[common.description]?.rich_text).trim() || (adapter.kind==='recommendation'?'':title),
     pubDate:new Date(rawDate).toISOString(),publishedHasTime:rawDate.includes('T'),tags:(p[common.tags]?.multi_select || []).map(tag=>tag.name),draft:false,featured:!!p[common.featured]?.checkbox,
     projectStatus:adapter.kind==='project'?(p[fields.projectStatus]?.select?.name || ''):'',
     projectType:adapter.kind==='project'?plainText(p[fields.projectType]?.rich_text).trim():'',
     projectPeriod:projectPeriod?{start:projectPeriod.start,end:projectPeriod.end || null}:null,
     projectUrl:adapter.kind==='project'?publicUrl(fields.projectUrl,'项目主页'):'',
     repository:adapter.kind==='project'?publicUrl(fields.repository,'代码仓库'):'',
+    ...(adapter.kind==='recommendation'?{
+      recommendationType:recommendationCategory,
+      subtitle:plainText(p[fields.subtitle]?.rich_text).trim(),
+      externalUrl:publicUrl(fields.externalUrl,'推荐链接'),
+      sortOrder:p[fields.sortOrder]?.number ?? null,
+    }:{}),
   };
 }
 
@@ -129,8 +139,9 @@ export async function collectSnapshot({request,config,media,previous=[],targets=
   const bySource=new Map(modules.map(module=>[compactId(module.sourceId),module]));
   for (const module of modules) {
     const source=await request('data_sources/'+module.sourceId);
-    requireSchema(source,common,{title:'title',description:'rich_text',status:'select',date:'date',tags:'multi_select',slug:'rich_text',featured:'checkbox',cover:'files'},module.section.name);
+    requireSchema(source,{...common,...module.adapter.commonFields},{title:'title',description:'rich_text',status:'select',date:'date',tags:'multi_select',slug:'rich_text',featured:'checkbox',cover:'files'},module.section.name);
     if (module.adapter.kind==='project') requireSchema(source,module.adapter.fields,{projectStatus:'select',projectType:'rich_text',projectPeriod:'date',projectUrl:'url',repository:'url'},module.section.name);
+    if (module.adapter.kind==='recommendation') requireSchema(source,module.adapter.fields,{recommendationType:'select',subtitle:'rich_text',externalUrl:'url',sortOrder:'number'},module.section.name);
   }
   const queued=[];
   const targeted=new Set((targets || []).map(target=>target.id));
@@ -146,7 +157,8 @@ export async function collectSnapshot({request,config,media,previous=[],targets=
     }
   } else {
     for (const module of modules) {
-      const pages=await queryAll(request,module.sourceId,{filter:{property:common.status,select:{equals:common.published}}});
+      const fields={...common,...module.adapter.commonFields};
+      const pages=await queryAll(request,module.sourceId,{filter:{property:fields.status,select:{equals:fields.published}}});
       queued.push(...pages.map(page=>({page,...module})));
     }
   }
@@ -158,7 +170,9 @@ export async function collectSnapshot({request,config,media,previous=[],targets=
     if (routes.has(route)) throw new Error('同一栏目存在重复内容路径：'+data.id);
     routes.add(route);
   }
-  const route=item=>config.site+(item.modulePath==='/'?'':item.modulePath)+'/'+item.id+'/';
+  const route=item=>item.kind==='recommendation'
+    ? config.site+item.modulePath+'/category/'+recommendationType(item.recommendationType).key+'/#rec-'+item.id
+    : config.site+(item.modulePath==='/'?'':item.modulePath)+'/'+item.id+'/';
   const links=new Map([...retained.map(item=>[item.sourcePageId,route(item)]),...published.map(({page,data})=>[page.id,route(data)])]);
   const children=blockReader(request,'内容页面');
   const content=[...retained];
@@ -167,7 +181,7 @@ export async function collectSnapshot({request,config,media,previous=[],targets=
     const html=await renderBlocks(await children(page.id),{children,media:body=>media(body,mediaIndex),publishedLinks:links});
     const current=await request('pages/'+page.id);
     if (!metadata(current,{section,common,adapter}) || current.last_edited_time!==page.last_edited_time) throw new Error('内容正在编辑或下线，留待下一次同步');
-    const coverFile=page.properties?.[common.cover]?.files?.[0];
+    const coverFile=page.properties?.[adapter.commonFields?.cover || common.cover]?.files?.[0];
     const cover=coverFile?await media(coverFile,mediaIndex):'';
     content.push({...data,cover,html,sourcePageId:page.id,sourceId:page.parent?.data_source_id,mediaIndex});
   }
@@ -310,12 +324,15 @@ export async function runSync() {
   const dataDir=resolve(root,'src/data'), assetDir=resolve(root,'public/notion-media');
   await mkdir(dataDir,{recursive:true}); await mkdir(assetDir,{recursive:true});
   for (const [name,bytes] of assets) await writeFile(resolve(assetDir,name),bytes);
-  const posts=content.filter(item=>item.kind!=='project');
+  const posts=content.filter(item=>item.kind==='article');
   const projects=content.filter(item=>item.kind==='project');
+  const recommendations=content.filter(item=>item.kind==='recommendation');
   const output=resolve(dataDir,'notion-posts.json');
   await writeFile(output+'.tmp',JSON.stringify(posts,null,2)+'\n'); await rename(output+'.tmp',output);
   const projectsOutput=resolve(dataDir,'notion-projects.json');
   await writeFile(projectsOutput+'.tmp',JSON.stringify(projects,null,2)+'\n'); await rename(projectsOutput+'.tmp',projectsOutput);
+  const recommendationsOutput=resolve(dataDir,'notion-recommendations.json');
+  await writeFile(recommendationsOutput+'.tmp',JSON.stringify(recommendations,null,2)+'\n'); await rename(recommendationsOutput+'.tmp',recommendationsOutput);
   if (siteConfig) await writeFile(resolve(dataDir,'site-config.json'),JSON.stringify(siteConfig,null,2)+'\n');
   await writeFile(resolve(root,'public/_notion-content.json'),JSON.stringify({version:2,revision,posts:content,siteConfig})+'\n');
   await writeFile(resolve(root,'public/_notion-sync.json'),JSON.stringify({syncedAt,revision,mode:targets===null?'full':'incremental',updated:targets===null?content.length:targets.length})+'\n');

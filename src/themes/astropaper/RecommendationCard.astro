@@ -1,0 +1,33 @@
+---
+import { recommendationType, hasRecommendationBody } from '../../recommendations.mjs';
+import Icon from './Icon.astro';
+const { item, detail = false } = Astro.props;
+const data = item.data;
+const type = recommendationType(data.recommendationType)!;
+const detailUrl = hasRecommendationBody(data.html) ? `${data.modulePath}/${item.id}/` : '';
+const titleUrl = detail ? data.externalUrl : detailUrl || data.externalUrl;
+const externalTitle = titleUrl && titleUrl === data.externalUrl;
+const Heading = detail ? 'h1' : 'h3';
+---
+
+<article id={`rec-${item.id}`} class:list={['rec-card', `rec-${type.key}`, { 'rec-detail': detail }]}>
+  <div class:list={['rec-image', { 'rec-image-empty': !data.cover }]}>
+    {data.cover
+      ? <img src={data.cover} alt="" loading={detail ? 'eager' : 'lazy'} decoding="async" />
+      : <span aria-hidden="true">{type.key === 'books' ? '书' : Array.from(data.title)[0]}</span>}
+  </div>
+  <div class="rec-copy">
+    {detail && <p class="rec-kind">{type.label}</p>}
+    <Heading class="rec-title">
+      {titleUrl
+        ? <a href={titleUrl} target={externalTitle ? '_blank' : undefined} rel={externalTitle ? 'noopener noreferrer' : undefined}>{data.title}{externalTitle && <span class="sr-only">（新窗口打开）</span>}</a>
+        : data.title}
+    </Heading>
+    {data.subtitle && <p class="rec-subtitle">{data.subtitle}</p>}
+    {data.description && <p class="rec-reason">{data.description}</p>}
+    {(data.externalUrl || (!detail && detailUrl)) && <div class="rec-actions">
+      {!detail && detailUrl && <a href={detailUrl}>阅读推荐理由 <span aria-hidden="true">→</span></a>}
+      {data.externalUrl && <a href={data.externalUrl} target="_blank" rel="noopener noreferrer">{type.linkLabel}<Icon name="arrowUpRight" size={14} /><span class="sr-only">（新窗口打开）</span></a>}
+    </div>}
+  </div>
+</article>

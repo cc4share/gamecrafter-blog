@@ -9,3 +9,5 @@ export { default as Projects } from './themes/astropaper/Projects.astro';
 export { default as Project } from './themes/astropaper/Project.astro';
 export { default as ThoughtStream } from './themes/astropaper/ThoughtStream.astro';
 export { default as Thought } from './themes/astropaper/Thought.astro';
+export { default as Recommendations } from './themes/astropaper/Recommendations.astro';
+export { default as Recommendation } from './themes/astropaper/Recommendation.astro';

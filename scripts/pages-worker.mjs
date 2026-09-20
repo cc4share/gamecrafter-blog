@@ -1,11 +1,12 @@
 // Replaced at build time. This manifest belongs to this exact deployment.
 const version = "BUILD_VERSION";
 const contentPaths = new Set(["CONTENT_PATHS"]);
+const recommendationSections = ["RECOMMENDATION_SECTIONS"];
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const contentSection=['blog','projects'].find(section=>url.pathname.startsWith('/'+section+'/'));
+    const contentSection=['blog','projects',...recommendationSections].find(section=>url.pathname.startsWith('/'+section+'/'));
     const missingContent = contentSection &&
       !['/'+contentSection+'/', '/'+contentSection+'/index.html'].includes(url.pathname) && !contentPaths.has(url.pathname);
     if (missingContent) url.pathname = '/404.html';

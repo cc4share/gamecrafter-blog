@@ -58,6 +58,11 @@
         "动态流": {
           "kind": "article"
         },
+        "推荐陈列": {
+          "kind": "recommendation",
+          "commonFields": { "title": "名称", "description": "推荐语", "cover": "图片" },
+          "fields": { "recommendationType": "类型", "subtitle": "副标题", "externalUrl": "链接", "sortOrder": "排序" }
+        },
         "项目网格": {
           "kind": "project",
           "fields": {

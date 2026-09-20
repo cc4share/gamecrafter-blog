@@ -1,0 +1,40 @@
+---
+import { site } from '../../site.config';
+import { recommendationTypes } from '../../recommendations.mjs';
+import BaseLayout from './BaseLayout.astro';
+import RecommendationCard from './RecommendationCard.astro';
+import './styles/recommendations.css';
+
+const { items, section, category } = Astro.props;
+const groups = recommendationTypes.map(type => ({ ...type, items: items.filter(item => item.data.recommendationType === type.label) }));
+const visibleGroups = category ? groups.filter(group => group.key === category.key) : groups.filter(group => group.items.length);
+const empty = category ? !visibleGroups[0]?.items.length : !items.length;
+---
+
+<BaseLayout title={`${category ? `${category.label} · ` : ''}${section.navLabel} · ${site.name}`} description={section.description}>
+  <nav class="app-layout mt-8 mb-1 rec-breadcrumb" aria-label="面包屑导航" data-page-intro>
+    <a href="/">首页</a><span aria-hidden="true">»</span>
+    {category ? <><a href={`${section.path}/`}>{section.navLabel}</a><span aria-hidden="true">»</span><span aria-current="page">{category.label}</span></> : <span aria-current="page">{section.navLabel}</span>}
+  </nav>
+  <main id="main-content" class="app-layout rec-page">
+    <header class="rec-intro">
+      <h1 class="text-2xl font-semibold sm:text-3xl">{section.heading || '值得推荐。'}</h1>
+      {section.description && <p>{section.description}</p>}
+    </header>
+    <nav class="rec-tabs" aria-label="推荐分类">
+      <a href={`${section.path}/`} aria-current={!category ? 'page' : undefined}>全部 <span>{items.length}</span></a>
+      {groups.map(group => <a href={`${section.path}/category/${group.key}/`} aria-current={category?.key === group.key ? 'page' : undefined}>{group.label}<span>{group.items.length}</span></a>)}
+    </nav>
+    {empty ? <section class="rec-empty"><h2>{category ? `还没有公开的${category.label}推荐。` : '好东西，慢慢收集。'}</h2><p>这里会留下值得分享的作品、工具和人。</p></section> : visibleGroups.map(group => (
+      <section class="rec-group" aria-labelledby={`rec-group-${group.key}`}>
+        <header class="rec-group-heading">
+          <div><h2 id={`rec-group-${group.key}`}>{group.label}</h2><p>{group.subtitle}</p></div>
+          {!category && group.items.length > group.limit && <a class="rec-see-all" href={`${section.path}/category/${group.key}/`}>全部 {group.items.length} <span aria-hidden="true">→</span></a>}
+        </header>
+        <ul class:list={['rec-grid', `rec-grid-${group.key}`]}>
+          {(category ? group.items : group.items.slice(0, group.limit)).map(item => <li><RecommendationCard {item} /></li>)}
+        </ul>
+      </section>
+    ))}
+  </main>
+</BaseLayout>
