@@ -6,7 +6,8 @@ import { buildSectionPaths } from '../src/section-routes.mjs';
 
 const source = (await readFile(new URL('./pages-worker.mjs', import.meta.url), 'utf8'))
   .replace('"BUILD_VERSION"', '"revision-test"')
-  .replace('["CONTENT_PATHS"]', '["/blog/live", "/blog/live/", "/blog/live/index.html", "/projects/tool", "/projects/tool/", "/projects/tool/index.html"]');
+  .replace('["RECOMMENDATION_SECTIONS"]', '["recommendations"]')
+  .replace('["CONTENT_PATHS"]', '["/blog/live", "/blog/live/", "/blog/live/index.html", "/projects/tool", "/projects/tool/", "/projects/tool/index.html", "/recommendations/category/books/", "/recommendations/review/"]');
 const { default: worker } = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 
 test('published paths follow each Notion module path',()=>{
@@ -45,6 +46,13 @@ test('withdrawn project cannot serve a stale body', async () => {
   }});
   assert.equal(result.status, 404);
   assert.equal(await result.text(), 'Not found');
+});
+
+test('recommendation categories and reviews remain reachable, withdrawn reviews return 404',async()=>{
+  for (const [path,status] of [['/recommendations/',200],['/recommendations/category/books/',200],['/recommendations/review/',200],['/recommendations/retired/',404],['/recommendations/retired/index.html',404]]) {
+    const result=await worker.fetch(new Request('https://example.com'+path),{ASSETS:{fetch:async()=>new Response('content')}});
+    assert.equal(result.status,status,path);
+  }
 });
 test('published article uses build-specific asset cache and ignores old conditional requests', async () => {
   const result = await worker.fetch(new Request('https://example.com/blog/live/?__deployment=old', {

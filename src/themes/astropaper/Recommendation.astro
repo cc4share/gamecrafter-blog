@@ -1,0 +1,19 @@
+---
+import { site } from '../../site.config';
+import { recommendationType } from '../../recommendations.mjs';
+import BaseLayout from './BaseLayout.astro';
+import RecommendationCard from './RecommendationCard.astro';
+import './styles/recommendations.css';
+const { item, section } = Astro.props;
+const type = recommendationType(item.data.recommendationType)!;
+---
+<BaseLayout title={`${item.data.title} · ${site.name}`} description={item.data.description}>
+  <nav class="app-layout mt-8 mb-6 rec-breadcrumb" aria-label="面包屑导航" data-page-intro>
+    <a href="/">首页</a><span aria-hidden="true">»</span><a href={`${section.path}/`}>{section.navLabel}</a><span aria-hidden="true">»</span><a href={`${section.path}/category/${type.key}/`}>{type.label}</a>
+  </nav>
+  <main id="main-content" class="app-layout rec-detail-page" data-pagefind-body>
+    <RecommendationCard {item} detail />
+    <article class="app-prose rec-body"><slot /></article>
+    <p class="rec-return"><a href={`${section.path}/category/${type.key}/`}>← 更多{type.label}推荐</a></p>
+  </main>
+</BaseLayout>

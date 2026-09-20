@@ -1,0 +1,81 @@
+.rec-page { padding-bottom: 3.5rem; }
+.rec-breadcrumb { display: flex; flex-wrap: wrap; gap: .4rem; font-weight: 300; color: var(--muted-foreground); }
+.rec-breadcrumb a:hover { color: var(--accent); }
+.rec-intro { padding-bottom: 1.8rem; }
+.rec-intro p { margin-top: .8rem; max-width: 36rem; line-height: 1.9; color: var(--muted-foreground); }
+.rec-tabs { display: flex; flex-wrap: wrap; gap: .35rem 1.15rem; padding-bottom: .8rem; border-bottom: 1px solid var(--border); }
+.rec-tabs a { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; border-bottom: 2px solid transparent; font-size: .9rem; color: var(--muted-foreground); }
+.rec-tabs a[aria-current] { border-bottom-color: var(--accent); color: var(--foreground); }
+.rec-tabs a:hover { color: var(--accent); }
+.rec-tabs span { font-size: .7rem; opacity: .7; }
+.rec-group { padding-block: 2.5rem; border-bottom: 1px solid var(--border); }
+.rec-group:last-child { border-bottom: 0; padding-bottom: 0; }
+.rec-group-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.6rem; }
+.rec-group-heading h2 { font-size: 1.2rem; font-weight: 600; }
+.rec-group-heading p { font-size: .8rem; line-height: 1.7; color: var(--muted-foreground); margin-top: .4rem; }
+.rec-see-all { flex-shrink: 0; color: var(--accent); font-size: .8rem; padding-block: .7rem; }
+.rec-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 1.6rem; list-style: none; padding: 0; margin: 0; }
+.rec-grid > li, .rec-copy { min-width: 0; }
+.rec-card { height: 100%; overflow-wrap: anywhere; }
+.rec-title { font-size: 1.05rem; font-weight: 600; line-height: 1.5; margin: 0; }
+.rec-title a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: .25em; }
+.rec-subtitle { margin-top: .35rem; font-size: .75rem; line-height: 1.7; color: var(--muted-foreground); }
+.rec-reason { margin-top: .9rem; font-size: .875rem; line-height: 1.85; white-space: pre-line; }
+.rec-actions { display: flex; flex-wrap: wrap; gap: .2rem 1rem; margin-top: .7rem; font-size: .75rem; color: var(--accent); }
+.rec-actions a { display: inline-flex; align-items: center; gap: .25rem; padding-block: .4rem; }
+.rec-actions a:hover { text-decoration: underline; text-underline-offset: .3em; }
+.rec-actions svg { width: .9rem; height: .9rem; flex: none; }
+.rec-image { min-width: 0; }
+.rec-image img { display: block; width: 100%; height: 100%; }
+.rec-image-empty { display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); color: var(--muted-foreground); font-size: 1.5rem; }
+
+/* Books keep the entire cover; their compact row reads like a shelf label. */
+.rec-books { display: grid; grid-template-columns: 5.25rem minmax(0, 1fr); align-items: start; gap: 1rem; }
+.rec-books .rec-image { aspect-ratio: 2 / 3; }
+.rec-books .rec-image img { object-fit: contain; object-position: top center; filter: drop-shadow(2px 3px 2px rgb(0 0 0 / .12)); }
+.rec-books .rec-image-empty { border-inline-start-width: 4px; }
+
+/* Games give their landscape artwork room to establish a world. */
+.rec-games .rec-image { aspect-ratio: 16 / 9; margin-bottom: 1rem; overflow: hidden; border-radius: .35rem; }
+.rec-games .rec-image img { object-fit: cover; }
+
+/* Tools use an icon-sized visual and a compact, structured information panel. */
+.rec-software { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr); gap: .85rem; padding: 1.1rem; border: 1px solid var(--border); border-radius: .6rem; }
+.rec-software .rec-image { aspect-ratio: 1; border-radius: .55rem; overflow: hidden; }
+.rec-software .rec-image img { object-fit: contain; }
+
+/* Hardware is an object beside the owner's account, never a cropped banner. */
+.rec-grid-hardware { grid-template-columns: minmax(0, 1fr); }
+.rec-hardware { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 2rem; align-items: center; }
+.rec-hardware .rec-image { aspect-ratio: 4 / 3; }
+.rec-hardware .rec-image img { object-fit: contain; }
+.rec-grid-hardware > li + li { padding-top: 1.8rem; border-top: 1px dashed var(--border); }
+
+/* People have a portrait and a short introduction, without a product frame. */
+.rec-people { display: grid; grid-template-columns: 3.25rem minmax(0, 1fr); gap: 1rem; }
+.rec-people .rec-image { aspect-ratio: 1; border-radius: 50%; overflow: hidden; }
+.rec-people .rec-image img { object-fit: cover; }
+.rec-empty { padding-block: 4rem; }
+.rec-empty h2 { font-size: 1.1rem; font-weight: 500; }
+.rec-empty p { margin-top: .8rem; font-size: .875rem; color: var(--muted-foreground); }
+.rec-detail-page { padding-bottom: 2rem; }
+.rec-detail { height: auto; margin-top: 1rem; }
+.rec-detail .rec-title { font-size: 1.6rem; }
+.rec-detail .rec-kind { font-size: .75rem; color: var(--accent); margin-bottom: .5rem; }
+.rec-detail.rec-books { grid-template-columns: 8rem minmax(0, 1fr); gap: 2rem; }
+.rec-detail.rec-games .rec-image { max-height: 22rem; }
+.rec-detail.rec-software { padding: 0; border: 0; grid-template-columns: 4rem minmax(0, 1fr); }
+.rec-detail.rec-people { grid-template-columns: 5rem minmax(0, 1fr); }
+.rec-body { border-top: 1px solid var(--border); margin-top: 2rem; padding-top: 1rem; }
+.rec-return { margin-top: 2rem; color: var(--accent); font-size: .875rem; }
+@media (max-width: 600px) {
+  .rec-grid { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
+  .rec-group { padding-block: 2rem; }
+  .rec-group-heading { margin-bottom: 1.3rem; }
+  .rec-books { grid-template-columns: 5.5rem minmax(0, 1fr); }
+  .rec-hardware { grid-template-columns: 6.25rem minmax(0, 1fr); gap: 1rem; align-items: start; }
+  .rec-detail.rec-books { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1rem; }
+  .rec-detail .rec-title { font-size: 1.35rem; }
+  .rec-tabs { column-gap: .95rem; }
+  .rec-grid-people > li + li { padding-top: 1.6rem; border-top: 1px dashed var(--border); }
+}

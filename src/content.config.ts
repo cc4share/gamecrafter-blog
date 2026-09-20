@@ -42,4 +42,16 @@ const projects = defineCollection({
   }),
 });
 
-export const collections = { blog, projects };
+const recommendations = defineCollection({
+  loader: file('src/data/notion-recommendations.json'),
+  schema: z.object({
+    title: z.string(), description: z.string(), moduleKey: z.string(), modulePath: z.string(),
+    html: z.string(), pubDate: z.coerce.date(), draft: z.boolean().default(false),
+    featured: z.boolean().default(false), cover: z.string().default(''),
+    recommendationType: z.enum(['书籍', '游戏', '软件', '硬件', '人物']),
+    subtitle: z.string().default(''), externalUrl: z.string().default(''),
+    sortOrder: z.number().nullable().default(null),
+  }),
+});
+
+export const collections = { blog, projects, recommendations };
