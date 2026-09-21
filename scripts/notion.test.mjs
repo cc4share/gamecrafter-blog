@@ -120,6 +120,11 @@ test('site settings combine with section rows into public configuration',async()
   const value=await collectSiteConfig({config,request,media:async()=>'/notion-media/avatar.png',sources,sections});
   assert.equal(value.name,'Craft4Fun');assert.equal(value.themeId,'astropaper');assert.equal(value.avatar.src,'/notion-media/avatar.png');assert.equal(value.pages.about.html,'<p>关于正文</p>');
   assert.deepEqual(value.social,[{label:'GitHub',href:'https://github.com/example'},{label:'邮箱',href:'mailto:hello@example.com'}]);
+  assert.equal(value.author.bioHtml,'慢慢写。');
+  properties.作者简介.rich_text=[...rt('参与过 '),{...rt('游戏')[0],text:{content:'游戏',link:{url:'https://example.com/game?a=1&b=2'}},annotations:{bold:true}},...rt('\n继续记录。'),{...rt('<script>')[0],href:'javascript:alert(1)'}];
+  const richBio=await collectSiteConfig({config,request,media:async()=>'',sources,sections});
+  assert.equal(richBio.author.bio,'参与过 游戏\n继续记录。<script>');
+  assert.equal(richBio.author.bioHtml,'参与过 <a href="https://example.com/game?a=1&amp;b=2" rel="noopener noreferrer"><strong>游戏</strong></a><br>继续记录。&lt;script&gt;');
   properties.主题.select.name='Unknown';
   await assert.rejects(()=>collectSiteConfig({config,request,media:async()=>'',sources,sections}),/主题无效/);
   properties.主题.select.name='AstroPaper';

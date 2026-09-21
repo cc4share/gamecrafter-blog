@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { resolve, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { plainText, renderBlocks, safeUrl } from './notion-render.mjs';
+import { plainText, richText, renderBlocks, safeUrl } from './notion-render.mjs';
 import { recommendationType } from '../src/recommendations.mjs';
 
 const compactId=value=>String(value || '').replaceAll('-','').toLowerCase();
@@ -219,7 +219,7 @@ export async function collectSiteConfig({request,config,media,sources,sections})
   const byKey=Object.fromEntries(active.map(section=>[section.key,section]));
   const writing=byKey.writing || {},projects=byKey.projects || {},about=byKey.about || {};
   return {
-    name,title:name,description:text('description') || name,themeId,avatar,author:{name:authorName,bio:text('authorBio'),email},social,
+    name,title:name,description:text('description') || name,themeId,avatar,author:{name:authorName,bio:text('authorBio'),bioHtml:richText(properties[settings.fields.authorBio]?.rich_text),email},social,
     sections:active.map(({mediaIndex,sourceId,...section})=>section),
     navigation:{home:byKey.home?.navLabel || '首页',writing:writing.navLabel || '写作',projects:projects.navLabel || '项目',about:about.navLabel || '关于'},
     pages:{
