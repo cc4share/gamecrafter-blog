@@ -56,7 +56,8 @@
           "kind": "article"
         },
         "动态流": {
-          "kind": "article"
+          "kind": "article",
+          "fields": { "homeThought": "首页展示" }
         },
         "推荐陈列": {
           "kind": "recommendation",

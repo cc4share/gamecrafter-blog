@@ -1,0 +1,63 @@
+---
+const { items } = Astro.props;
+---
+<thought-bubble class="thought-bubble" aria-label="最近的想法">
+  <div class="bubble-content">
+    {items.map((item, index) => <a href={item.href} class="bubble-item" hidden={index !== 0}><span>{item.text}</span></a>)}
+  </div>
+  <button type="button" data-next aria-label="换一条想法" title="换一条想法" hidden>
+    <svg aria-hidden="true" focusable="false" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 6.1A8 8 0 0 1 19.5 9M4.5 15a8 8 0 0 0 13.4 2.9"/></svg>
+  </button>
+</thought-bubble>
+<style>
+  .thought-bubble { display:flex; align-items:center; gap:.6rem; min-width:0; }
+  .bubble-content { display:grid; align-items:center; flex:1; min-width:0; height:3.15rem; }
+  .bubble-item { display:block; font-size:.85rem; line-height:1.85; color:var(--muted-foreground); overflow-wrap:anywhere; text-align:left; }
+  .bubble-item:hover { color:var(--accent); }
+  .bubble-item span { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  button { display:grid; place-items:center; flex:none; width:2rem; height:2rem; border-radius:50%; color:var(--muted-foreground); opacity:.5; transition:color .2s,opacity .2s,background-color .2s; }
+  button:hover,button:focus-visible { opacity:1; color:var(--accent); background:color-mix(in srgb,var(--foreground) 5%,transparent); }
+  button[hidden],.bubble-item[hidden] { display:none; }
+  .bubble-item[data-enter] { animation:thought-enter .4s ease-out both; }
+  @keyframes thought-enter { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+  @media(max-width:699px) { .thought-bubble { gap:.2rem; } .bubble-item { text-align:left; font-size:.8rem; line-height:1.75; } .bubble-content { height:2.8rem; } button { width:2.75rem; height:2.75rem; } }
+  @media(prefers-reduced-motion:reduce) { .bubble-item[data-enter] { animation:none; } }
+</style>
+<script>
+  class ThoughtBubble extends HTMLElement {
+    connectedCallback() {
+      const items=Array.from(this.querySelectorAll<HTMLAnchorElement>('.bubble-item'));
+      if (items.length<2) return;
+      const next=this.querySelector<HTMLButtonElement>('[data-next]')!;
+      const motion=matchMedia('(prefers-reduced-motion: reduce)');
+      const events=new AbortController();
+      let current=0, hovered=false, focused=false, visible=true;
+      let timer:ReturnType<typeof setTimeout>|undefined;
+      next.hidden=false;
+      const stop=()=>{clearTimeout(timer);timer=undefined;};
+      const schedule=()=>{stop();if(!hovered&&!focused&&visible&&!document.hidden&&!motion.matches)timer=setTimeout(()=>{advance();schedule();},10000);};
+      const advance=()=>{
+        items[current].hidden=true;
+        items[current].removeAttribute('data-enter');
+        current=(current+1)%items.length;
+        items[current].hidden=false;
+        items[current].setAttribute('data-enter','');
+      };
+      const listen=(target:EventTarget,type:string,handler:EventListener)=>target.addEventListener(type,handler,{signal:events.signal});
+      listen(this,'pointerenter',()=>{hovered=true;schedule();});
+      listen(this,'pointerleave',()=>{hovered=false;schedule();});
+      listen(this,'focusin',()=>{focused=true;schedule();});
+      listen(this,'focusout',event=>{focused=this.contains((event as FocusEvent).relatedTarget as Node);schedule();});
+      listen(next,'click',()=>{advance();schedule();});
+      listen(document,'visibilitychange',schedule);
+      listen(motion,'change',schedule);
+      const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;schedule();});
+      observer.observe(this);
+      this.cleanup=()=>{stop();events.abort();observer.disconnect();};
+      schedule();
+    }
+    cleanup?:()=>void;
+    disconnectedCallback(){this.cleanup?.();}
+  }
+  if(!customElements.get('thought-bubble'))customElements.define('thought-bubble',ThoughtBubble);
+</script>
