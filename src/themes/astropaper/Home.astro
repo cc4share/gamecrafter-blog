@@ -42,8 +42,8 @@ const iconFor=(label:string)=>label==='GitHub'?'github':label==='X'?'x':label===
 .hero-name{min-width:0;white-space:nowrap}
 .hero-thought{min-width:0}
 .author-bio{overflow-wrap:anywhere}
-.author-bio :global(a){text-decoration:underline;text-decoration-style:dotted;text-underline-offset:.2em;text-decoration-color:var(--muted-foreground)}
-.author-bio :global(a:hover),.author-bio :global(a:focus-visible){color:var(--accent);text-decoration-color:currentColor}
+.author-bio :global(a){color:var(--accent);text-decoration:none}
+.author-bio :global(a:hover){opacity:.8}
 .hero-identity.has-thoughts{grid-template-columns:2.75rem minmax(0,1fr);gap:.6rem .85rem;margin-bottom:1.4rem}
 .has-thoughts .hero-name{grid-column:1/-1;grid-row:1}
 .has-thoughts .hero-name h1{margin-block:.5rem .8rem}
