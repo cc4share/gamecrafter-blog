@@ -146,3 +146,24 @@ test('YouTube links render as privacy-enhanced responsive players',async()=>{
   const paragraph=await renderBlocks([{id:'link',type:'paragraph',paragraph:{rich_text:[{...rt('https://youtu.be/dQw4w9WgXcQ')[0],href:'https://youtu.be/dQw4w9WgXcQ'}]}}],context);
   assert.match(paragraph,/<iframe/);
 });
+
+ test('homepage thoughts require explicit selection and still respect publication status',()=>{
+  const p=page('memo-one');
+  const context={section:section(),common,adapter:{kind:'article',fields:{homeThought:'首页展示'}}};
+  assert.equal(metadata(p,context).homeThought,false);
+  p.properties['首页展示']={checkbox:true};
+  assert.equal(metadata(p,context).homeThought,true);
+  p.properties['发布状态'].select.name='草稿';
+  assert.equal(metadata(p,context),null);
+ });
+
+ test('homepage thought selection excludes other modules, drafts, and unchecked items',async()=>{
+  const {selectHomeThoughts}=await import('../src/home-thoughts.mjs');
+  const entry=(id,extra={})=>({id,data:{moduleKey:'memo',modulePath:'/memo',draft:false,homeThought:true,pubDate:'2026-09-20',title:id,description:id,html:'',...extra}});
+  const sections=[{key:'memo',enabled:true,layout:'动态流'}];
+  const items=[entry('checked'),entry('unchecked',{homeThought:false}),entry('draft',{draft:true}),entry('article',{moduleKey:'writing'}),entry('newest',{pubDate:'2026-09-21',html:'<p>文字 <strong>摘录</strong></p>'})];
+  assert.deepEqual(selectHomeThoughts(items,sections),[{href:'/memo/newest/',text:'文字 摘录'},{href:'/memo/checked/',text:'checked'}]);
+  assert.deepEqual(selectHomeThoughts(items,[{...sections[0],enabled:false}]),[]);
+  assert.deepEqual(selectHomeThoughts([entry('unchecked',{homeThought:false})],sections),[]);
+  assert.equal(selectHomeThoughts(Array.from({length:8},(_,i)=>entry('memo-'+i)),sections).length,5);
+ });

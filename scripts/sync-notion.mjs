@@ -116,6 +116,7 @@ export function metadata(page,{section,common,adapter}) {
   const projectPeriod=adapter.kind==='project'?p[fields.projectPeriod]?.date:null;
   return {
     id,kind:adapter.kind,moduleKey:section.key,modulePath:section.path,title,
+    homeThought:!!(fields.homeThought && p[fields.homeThought]?.checkbox),
     description:plainText(p[common.description]?.rich_text).trim() || (adapter.kind==='recommendation'?'':title),
     pubDate:new Date(rawDate).toISOString(),publishedHasTime:rawDate.includes('T'),tags:(p[common.tags]?.multi_select || []).map(tag=>tag.name),draft:false,featured:!!p[common.featured]?.checkbox,
     projectStatus:adapter.kind==='project'?(p[fields.projectStatus]?.select?.name || ''):'',
@@ -264,7 +265,7 @@ export async function runSync() {
       const base=await response.json();
       if (!Number.isSafeInteger(base.revision)) throw new Error('已发布内容缓存版本无效');
       revision=base.revision;
-      if (base.version===2 && Array.isArray(base.posts) && !base.posts.some(p=>!p.sourcePageId || !p.moduleKey || !p.modulePath || typeof p.html!=='string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.id))) {
+      if (base.version===2 && base.homeThoughtSchema===1 && Array.isArray(base.posts) && !base.posts.some(p=>!p.sourcePageId || !p.moduleKey || !p.modulePath || typeof p.html!=='string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.id))) {
         previous=base.posts;previousSiteConfig=base.siteConfig || null;cacheCompatible=true;
       }
     } else if (response.status!==404) throw new Error('无法读取已发布内容缓存');
@@ -334,7 +335,7 @@ export async function runSync() {
   const recommendationsOutput=resolve(dataDir,'notion-recommendations.json');
   await writeFile(recommendationsOutput+'.tmp',JSON.stringify(recommendations,null,2)+'\n'); await rename(recommendationsOutput+'.tmp',recommendationsOutput);
   if (siteConfig) await writeFile(resolve(dataDir,'site-config.json'),JSON.stringify(siteConfig,null,2)+'\n');
-  await writeFile(resolve(root,'public/_notion-content.json'),JSON.stringify({version:2,revision,posts:content,siteConfig})+'\n');
+  await writeFile(resolve(root,'public/_notion-content.json'),JSON.stringify({version:2,homeThoughtSchema:1,revision,posts:content,siteConfig})+'\n');
   await writeFile(resolve(root,'public/_notion-sync.json'),JSON.stringify({syncedAt,revision,mode:targets===null?'full':'incremental',updated:targets===null?content.length:targets.length})+'\n');
   // Delete only generated hash-named files inside this project's generated asset directory.
   for (const name of await readdir(assetDir)) if (/^[a-f0-9]{64}\.[a-z0-9]+$/.test(name) && !assets.has(name)) {
