@@ -6,7 +6,7 @@ type ManagedSite = {
   description: string;
   themeId: 'astropaper';
   avatar: null | { src: string; alt: string };
-  author: { name: string; bio: string; email: string };
+  author: { name: string; bio: string; bioHtml?: string; email: string };
   social: Array<{ label: string; href: string }>;
   sections: Array<{
     key: string;

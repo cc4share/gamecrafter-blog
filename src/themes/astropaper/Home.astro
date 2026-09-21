@@ -25,7 +25,9 @@ const iconFor=(label:string)=>label==='GitHub'?'github':label==='X'?'x':label===
         {site.avatar&&<a href="/about/" class="avatar shrink-0" aria-label={`查看 ${site.author.name} 的介绍`}><img src={site.avatar.src} alt={site.avatar.alt} width="88" height="88" loading="eager"/></a>}
       </div>
       <p>{site.description}</p>
-      {site.author.bio&&<p class="mt-2">{site.author.bio}</p>}
+      {site.author.bio&&(site.author.bioHtml
+        ? <p class="author-bio mt-2" set:html={site.author.bioHtml}/>
+        : <p class="author-bio mt-2">{site.author.bio}</p>)}
       {site.social.length>0&&<div class="mt-4 flex max-sm:flex-col sm:items-center"><div class="me-2 mb-1 whitespace-nowrap sm:mb-0">社交链接：</div><div class="flex flex-wrap items-center gap-1">{site.social.map(item=><a href={item.href} rel="me" class="group p-2 hover:rotate-6 sm:p-1" title={item.label} aria-label={item.label}><Icon name={iconFor(item.label)} size={24}/></a>)}</div></div>}
     </section>
     {featured.length>0&&<section id="featured" class:list={['pt-12 pb-6',{'border-border border-b':recent.length>0}]}><h2 class="text-2xl font-semibold tracking-wide">精选</h2><ul>{featured.map(item=><PostCard post={item}/>)}</ul></section>}
@@ -39,6 +41,9 @@ const iconFor=(label:string)=>label==='GitHub'?'github':label==='X'?'x':label===
 .hero-identity{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1.5rem;margin-bottom:.6rem}
 .hero-name{min-width:0;white-space:nowrap}
 .hero-thought{min-width:0}
+.author-bio{overflow-wrap:anywhere}
+.author-bio :global(a){text-decoration:underline;text-decoration-style:dotted;text-underline-offset:.2em;text-decoration-color:var(--muted-foreground)}
+.author-bio :global(a:hover),.author-bio :global(a:focus-visible){color:var(--accent);text-decoration-color:currentColor}
 .hero-identity.has-thoughts{grid-template-columns:2.75rem minmax(0,1fr);gap:.6rem .85rem;margin-bottom:1.4rem}
 .has-thoughts .hero-name{grid-column:1/-1;grid-row:1}
 .has-thoughts .hero-name h1{margin-block:.5rem .8rem}
