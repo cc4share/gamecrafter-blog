@@ -40,5 +40,5 @@ type ManagedSite = {
 
 export const site = {
   ...(managedSite as ManagedSite),
-  url: 'https://gamecrafter.fun',
+url: 'https://craft4.fun',
 } as const;
